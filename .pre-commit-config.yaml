@@ -1,0 +1,45 @@
+exclude: "^docs/|/migrations/"
+default_stages: [ pre-commit ]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=4096"]
+      - id: debug-statements
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # A flake8 replacement, that uses Rust underwater.
+    rev: v0.14.1
+    hooks:
+      # Run the linter
+      - id: ruff-check
+        name: lint-backend
+        files: playground/
+        args: [ "--config", "pyproject.toml" ]
+      # Run the formatter
+      - id: ruff-format
+
+  - repo: https://github.com/asottile/pyupgrade
+    # Automatically updates old python structures to new ones
+    rev: v3.21.0
+    hooks:
+      - id: pyupgrade
+        args: [ --py310-plus ]
+
+#  - repo: https://github.com/Yelp/detect-secrets
+#    rev: v1.5.0
+#    hooks:
+#      - id: detect-secrets
+#        args: ['--baseline', '.secrets.baseline']
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
