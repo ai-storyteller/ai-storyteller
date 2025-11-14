@@ -103,7 +103,7 @@ notebook:
 	exec "$(VENV_DIR)/bin/marimo" edit --headless --no-token --port 2718 --host 0.0.0.0
 
 mcp:
-	/Users/me/.virtualenvs/storyteller/bin/python /Users/me/repos/storyteller-dev/src/storyteller/modules/st/mcp_impl.py http
+	/Users/me/.virtualenvs/storyteller/bin/python /Users/me/repos/ai-storyteller/src/storyteller/modules/st/mcp_impl.py http
 
 chat:
 	PYTHONHOME= PYTHONPATH=
