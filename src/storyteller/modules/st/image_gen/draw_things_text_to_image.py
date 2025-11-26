@@ -6,7 +6,6 @@ from uuid import uuid4
 from pathlib import Path
 import urllib.parse
 
-# Assuming this is the correct import path from your project structure
 from storyteller.modules.st.option_choices import artistic_styles
 from storyteller.settings import (
     OUTPUT_ROOT,
