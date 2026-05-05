@@ -2,6 +2,7 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "anywidget",
+#     "authlib",
 #     "docling",
 #     "fastapi",
 #     "google-cloud-secret-manager",
