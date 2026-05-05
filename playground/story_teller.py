@@ -430,9 +430,10 @@ def _story_prompt(mo):
     story_prompt = mo.ui.text_area(
         # value="""Craft a whimsical fantasy story set in an enchanted, glowing forest where ancient secrets are whispered by the wind and animals possess unique magical abilities. The characters discover a hidden map leading to a legendary artifact.
         # """,  # noqa
-        value="""Write a 500-700 word children's story about [CHARACTERS]. Start with them waking up/discovering something absurdly wrong (be creative—no flying cows). The problem escalates fast: their first fix backfires, making things worse, then worse again. Include snappy dialogue (40% of the story), sound effects, and physical comedy. They solve it through teamwork, each using their unique trait. End upbeat with everyone laughing together.
-TONE: Fast-paced and hilarious, not gentle. Open with action, not description.
-        """,  # noqa
+        value=(
+            "Write a 500-700 word children's story about [CHARACTERS]. Start with them waking up/discovering something absurdly wrong (be creative—no flying cows). The problem escalates fast: their first fix backfires, making things worse, then worse again. Include snappy dialogue (40% of the story), sound effects, and physical comedy. They solve it through teamwork, each using their unique trait. End upbeat with everyone laughing together.\n"
+            "TONE: Fast-paced and hilarious, not gentle. Open with action, not description."
+        ),
         label="Story Prompt",
         full_width=True,
     )
@@ -764,15 +765,9 @@ def _tabs(
             "Step 4. Documents": mo.vstack(
                 [
                     mo.md("### Generated PDF"),
-                    mo.pdf(pdf_path, width="600px", height="50vh")
-                    if pdf_path.exists()
-                    else mo.md(""),
+                    mo.pdf(pdf_path, width="600px", height="50vh") if pdf_path.exists() else mo.md(""),
                     mo.md("### Generated DOCX"),
-                    mo.md(f"""
-                    **Download the DOCX file:** [Download link]({docx_url})
-                    """)
-                    if docx_url
-                    else mo.md(""),
+                    mo.md(f"""**Download the DOCX file:** [Download link]({docx_url})""") if docx_url else mo.md(""),
                 ]
             ),
         },
