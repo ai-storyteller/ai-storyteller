@@ -19,6 +19,7 @@
 #     "matplotlib",
 #     "openai",
 #     "openpyxl",
+#     "pandas",
 #     "passlib",
 #     "protobuf",
 #     "pyarrow",

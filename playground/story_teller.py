@@ -130,6 +130,7 @@ def _check_session(mo, request):
     """Check session."""
     # Now you can access the session from the request
     if request and request.user and request.user["is_authenticated"]:
+        print(request.user)
         user_block = mo.vstack(
             [
                 mo.md(f"Welcome {request.user['username']}!"),
