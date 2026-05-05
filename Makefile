@@ -79,7 +79,7 @@ notebook:
 # Run the app with env vars applied and a clean Python env.
 # Unset Python env poisons for safety; force venv python.
 run:
-	$(UV) run main.py
+	$(UV) run python main.py
 
 mcp:
 	$(UV) run python src/storyteller/modules/st/mcp_impl.py http
