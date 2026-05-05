@@ -24,3 +24,4 @@ coreml_sdxl_base_packages/
 drawthings_output/
 unauthenticated/
 uv.lock
+.coverage

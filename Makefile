@@ -68,7 +68,7 @@ update-lock:
 	$(UV) lock --upgrade
 
 test quick-test:
-	$(PYTEST)
+	@set -a && . ./.env && $(PYTEST)
 
 ipython:
 	$(UV) run ipython

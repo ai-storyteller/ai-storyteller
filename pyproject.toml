@@ -204,7 +204,7 @@ addopts = [
     "--ignore=tmp",
     "--capture=no",
 ]
-testpaths = ["**/*.py"]
+testpaths = ["tests", "playground"]
 pythonpath = ["."]
 
 [tool.coverage.run]
