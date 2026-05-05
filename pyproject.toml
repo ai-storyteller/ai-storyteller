@@ -75,7 +75,7 @@ Changelog = "https://ai-storyteller.readthedocs.io/en/latest/changelog.html"
 "storyteller-chat" = "storyteller.modules.st.chat:main"
 
 [project.optional-dependencies]
-all = ["ai-storyteller[dev,test,docs]"]
+all = ["ai-storyteller[ui,dev,test,docs]"]
 dev = [
     "build",
     "detect-secrets",
@@ -102,6 +102,9 @@ docs = [
     "sphinx-no-pragma",
     "sphinx-design",
     "sphinx-revealjs",
+]
+ui = [
+    "authlib",
 ]
 
 [dependency-groups]
