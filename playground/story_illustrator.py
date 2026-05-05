@@ -14,10 +14,10 @@ def _std_imports():
     import logging
     import os
     import random
-    from functools import partial
-    from typing import Any
-    from pathlib import Path
     from copy import copy, deepcopy
+    from functools import partial
+    from pathlib import Path
+    from typing import Any
 
     return (
         Any,
@@ -55,27 +55,27 @@ def _app_imports():
         get_output_root_dir,
         get_storage_client,
     )
-    from storyteller.modules.st.enums import ImageGeneratorEnum
-    from storyteller.modules.st.option_choices import (
-        artistic_styles,
-    )
-
-    # This is a new, hypothetical function that would need to be created.
-    # It takes a story and extracts image prompts from it.
-    from storyteller.modules.st.llm_calls import (
-        extract_prompts_from_story,
-        extract_characters_from_story,
-        generate_existing_story_parts,
-    )
-    from storyteller.modules.st.image_gen_calls import (
-        generate_image,
-    )
     from storyteller.modules.st.content import (
         create_timestamp_directory,
         docx_to_pdf,
         download_images,
     )
     from storyteller.modules.st.content_docx import create_docx
+    from storyteller.modules.st.enums import ImageGeneratorEnum
+    from storyteller.modules.st.image_gen_calls import (
+        generate_image,
+    )
+
+    # This is a new, hypothetical function that would need to be created.
+    # It takes a story and extracts image prompts from it.
+    from storyteller.modules.st.llm_calls import (
+        extract_characters_from_story,
+        extract_prompts_from_story,
+        generate_existing_story_parts,
+    )
+    from storyteller.modules.st.option_choices import (
+        artistic_styles,
+    )
 
     return (
         ImageGeneratorEnum,
@@ -547,7 +547,9 @@ def _tabs(
         if cover_image_url:
             cover_image_json_path.write_text(json.dumps(cover_image_url, indent=4))
         if back_cover_image_url:
-            back_cover_image_json_path.write_text(json.dumps(back_cover_image_url, indent=4))
+            back_cover_image_json_path.write_text(
+                json.dumps(back_cover_image_url, indent=4)
+            )
 
         docx_path = Path(output_dir) / "story.docx"
         pdf_path = Path(output_dir) / "story.pdf"
@@ -566,7 +568,9 @@ def _tabs(
             )
             _progress_bar.update(subtitle="Creating PDF")
             docx_to_pdf(docx_path=docx_path, pdf_path=pdf_path)
-            docx_url = as_url(docx_path, )
+            docx_url = as_url(
+                docx_path,
+            )
         pdf_viewer = mo.vstack(
             [
                 mo.md("### Generated PDF"),
@@ -580,7 +584,9 @@ def _tabs(
                 mo.md("### Generated DOCX"),
                 mo.md(f"""
                 **Download the DOCX file:** [Download link]({docx_url})
-                """) if docx_url else mo.md(""),
+                """)
+                if docx_url
+                else mo.md(""),
             ]
         )
     else:

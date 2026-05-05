@@ -49,14 +49,17 @@ from langchain_core.messages import (
     ToolMessage,
 )
 from langchain_core.tools import StructuredTool
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
 from storyteller.modules.st.tool_impl import create_story_bundle_fn
 from storyteller.settings import (
-    TOOL_MODEL_PROVIDER as MODEL_PROVIDER,
     TOOL_MODEL_NAME as MODEL_NAME,
 )
+from storyteller.settings import (
+    TOOL_MODEL_PROVIDER as MODEL_PROVIDER,
+)
+
 
 # -----------------------------------------------------------------------------
 # 1. Tool definition
@@ -78,11 +81,11 @@ def _fallback_title_from_request(req: str) -> str:
     # We can soften leading verbs like "Create a story about" -> "A Little Fish Named Rody"
     lower = draft.lower()
     if lower.startswith("create a story about"):
-        draft = draft[len("create a story about"):].strip().strip(":,-")
+        draft = draft[len("create a story about") :].strip().strip(":,-")
     elif lower.startswith("make a story about"):
-        draft = draft[len("make a story about"):].strip().strip(":,-")
+        draft = draft[len("make a story about") :].strip().strip(":,-")
     elif lower.startswith("tell a story about"):
-        draft = draft[len("tell a story about"):].strip().strip(":,-")
+        draft = draft[len("tell a story about") :].strip().strip(":,-")
 
     # Final tidy
     draft = draft[:60].strip()
@@ -116,7 +119,11 @@ def _wrap_create_story_bundle_fn(
     :return: Result dict with 'public_urls' and PDF paths.
     :rtype: dict
     """
-    _title = story_title if story_title and story_title.strip() else _fallback_title_from_request(story_request)
+    _title = (
+        story_title
+        if story_title and story_title.strip()
+        else _fallback_title_from_request(story_request)
+    )
 
     return create_story_bundle_fn(
         story_request=story_request,
@@ -164,6 +171,7 @@ create_story_bundle_tool = StructuredTool.from_function(
 # 2. Agent state and nodes
 # -----------------------------------------------------------------------------
 
+
 class StoryState(TypedDict):
     """
     Conversation state carried through the LangGraph execution.
@@ -174,6 +182,7 @@ class StoryState(TypedDict):
         create_story_bundle OR we are mid-tool usage. We use this to prevent
         chaining more tools in the same turn.
     """
+
     messages: Annotated[list, add_messages]
     trace: list
     story_mode: bool
@@ -226,18 +235,24 @@ class BasicToolNode:
 
             # Produce short preview for trace
             try:
-                s = result if isinstance(result, str) else json.dumps(result, ensure_ascii=False)
+                s = (
+                    result
+                    if isinstance(result, str)
+                    else json.dumps(result, ensure_ascii=False)
+                )
                 preview = (s[:240] + "…") if len(s) > 240 else s
             except Exception:
                 preview = f"<non-serializable {type(result).__name__}>"
 
-            trace.append({
-                "node": "tools",
-                "event": "tool_executed",
-                "tool": _name,
-                "args": _args,
-                "result_preview": preview,
-            })
+            trace.append(
+                {
+                    "node": "tools",
+                    "event": "tool_executed",
+                    "tool": _name,
+                    "args": _args,
+                    "result_preview": preview,
+                }
+            )
 
             # Return a ToolMessage back into the graph so chatbot can read it
             outputs.append(
@@ -305,13 +320,15 @@ def chatbot_node(state: StoryState) -> dict:
 
     trace = list(state.get("trace", []))
     tool_calls = getattr(ai, "tool_calls", []) or []
-    trace.append({
-        "node": "chatbot",
-        "event": "llm_invoked",
-        "requested_tools": [
-            {"name": tc.get("name"), "args": tc.get("args")} for tc in tool_calls
-        ],
-    })
+    trace.append(
+        {
+            "node": "chatbot",
+            "event": "llm_invoked",
+            "requested_tools": [
+                {"name": tc.get("name"), "args": tc.get("args")} for tc in tool_calls
+            ],
+        }
+    )
 
     # Keep story_mode flag from state (we might already be in story_mode)
     return {
@@ -372,6 +389,7 @@ story_graph = graph_builder.compile()
 # 5. Tiny driver / CLI
 # -----------------------------------------------------------------------------
 
+
 def run_query(user_input: str) -> None:
     """
     Run a single user message through the graph and print the conversation + trace.
@@ -426,9 +444,7 @@ def main() -> None:
       - chat : Interactive chat loop with the story agent.
       - test : Send a single prompt from CLI right away.
     """
-    parser = argparse.ArgumentParser(
-        description="Storytelling LangGraph agent"
-    )
+    parser = argparse.ArgumentParser(description="Storytelling LangGraph agent")
     parser.add_argument(
         "mode",
         choices=["chat", "test"],

@@ -42,9 +42,9 @@ from typing import Any
 import marimo
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -105,9 +105,12 @@ app = FastAPI()
 # -----------------------------------------------------------------------------
 # API helpers
 # -----------------------------------------------------------------------------
-DISABLE_AUTHENTICATION = str(
-    os.getenv("DISABLE_AUTHENTICATION", "")
-).lower() in {"1", "true", "yes", "on"}
+DISABLE_AUTHENTICATION = str(os.getenv("DISABLE_AUTHENTICATION", "")).lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def get_current_user(request: Request):
@@ -328,7 +331,11 @@ MEDIA_DIR = os.path.join(os.path.dirname(__file__), "media")
 OUTPUT_MEDIA_DIR = os.path.join(os.path.dirname(__file__), "output")
 
 # Mount the directory to serve files under /media/
-app.mount("/media/output", StaticFiles(directory=OUTPUT_MEDIA_DIR, follow_symlink=True), name="output")
+app.mount(
+    "/media/output",
+    StaticFiles(directory=OUTPUT_MEDIA_DIR, follow_symlink=True),
+    name="output",
+)
 app.mount("/media", StaticFiles(directory=MEDIA_DIR, follow_symlink=True), name="media")
 
 # -----------------------------------------------------------------------------

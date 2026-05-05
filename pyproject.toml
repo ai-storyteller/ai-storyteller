@@ -3,6 +3,7 @@ name = "ai-storyteller"
 description = "The AI Storyteller - where your imagination meets state-of-the-art AI creativity."
 readme = "README.rst"
 version = "0.1"
+requires-python = ">=3.10"
 dependencies = [
     "Pillow",
     "accelerate",
@@ -39,15 +40,14 @@ dependencies = [
     "traitlets",
 ]
 authors = [
-    {name = "Artur Barseghyan", email = "artur.barseghyan@gmail.com"},
-    {name = "Dale Richardson", email = "dalesan@gmail.com"},
+    { name = "Artur Barseghyan", email = "artur.barseghyan@gmail.com" },
+    { name = "Dale Richardson", email = "dalesan@gmail.com" },
 ]
 maintainers = [
-    {name = "Artur Barseghyan", email = "artur.barseghyan@gmail.com"},
-    {name = "Dale Richardson", email = "dalesan@gmail.com"},
+    { name = "Artur Barseghyan", email = "artur.barseghyan@gmail.com" },
+    { name = "Dale Richardson", email = "dalesan@gmail.com" },
 ]
 license = "MIT"
-
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -69,6 +69,9 @@ Documentation = "https://ai-storyteller.readthedocs.io/"
 Repository = "https://github.com/ai-storyteller/ai-storyteller"
 Changelog = "https://ai-storyteller.readthedocs.io/en/latest/changelog.html"
 
+[project.scripts]
+"storyteller-chat" = "storyteller.modules.st.chat:main"
+
 [project.optional-dependencies]
 all = ["ai-storyteller[dev,test,docs]"]
 dev = [
@@ -81,7 +84,6 @@ dev = [
     "pydoclint",
     "ruff",
     "twine",
-    "uv",
     "wheel",
 ]
 test = [
@@ -99,57 +101,63 @@ docs = [
     "sphinx-design",
     "sphinx-revealjs",
 ]
-[project.scripts]
-"storyteller-chat" = "storyteller.modules.st.chat:main"
 
-[tool.black]
-line-length = 90
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-  | migrations
-  | wetty
-  | .venv
-)/
-'''
+[dependency-groups]
+dev = [
+    "ipython",
+    "pre-commit",
+    "ruff",
+    "mypy",
+    "build",
+    "detect-secrets",
+    "doc8",
+    "pkginfo",
+    "pydoclint",
+    "twine",
+    "wheel",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-codeblock",
+    "fake.py",
+]
+docs = [
+    "sphinx",
+    "pygments",
+    "sphinx-autobuild",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-no-pragma",
+    "sphinx-design",
+    "sphinx-revealjs",
+]
 
-# Build system information below.
-# NOTE: You don't need this in your own Black configuration.
+[tool.uv]
+default-groups = ["dev", "test"]
+package = true
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["storyteller", "storyteller.*"]
+
 [build-system]
-requires = ["setuptools>=41.0", "setuptools-scm", "wheel"]
+requires = ["setuptools>=41.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 80
-known_first_party = ["playground"]
-known_third_party = []
-skip = ["wsgi.py", ".venv/", "wetty"]
 
 [tool.ruff]
 line-length = 90
-
-# Enable Pyflakes `E` and `F` codes by default.
-lint.select = ["E", "F"]
-lint.ignore = []
-
-# Exclude a variety of commonly ignored directories.
+target-version = "py310"
+fix = true
+src = ["src", "playground"]
 exclude = [
     ".bzr",
     ".direnv",
     ".eggs",
     ".git",
+    ".hg",
     ".mypy_cache",
     ".nox",
     ".pants.d",
@@ -163,22 +171,23 @@ exclude = [
     "build",
     "dist",
     "node_modules",
-    ".venv",
-    "docs",
-    "wetty",
+    "venv",
+    "docs/_build",
 ]
-lint.per-file-ignores = {}
 
-# Allow unused variables when underscore-prefixed.
-lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+per-file-ignores = {}
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Assume Python 3.9.
-target-version = "py39"
+[tool.ruff.lint.isort]
+known-first-party = ["playground"]
 
 [tool.doc8]
-ignore-path = ["_build/", "wetty", ".venv",]
+ignore-path = ["_build/", "wetty", ".venv"]
 quiet = true
---max-line-length = 80
+max-line-length = 80
 
 [tool.pytest.ini_options]
 minversion = "0.6.7"
@@ -193,16 +202,12 @@ addopts = [
     "--ignore=tmp",
     "--capture=no",
 ]
-testpaths = [
-    "**/*.py",
-]
+testpaths = ["**/*.py"]
 pythonpath = ["."]
 
 [tool.coverage.run]
 relative_files = true
-omit = [
-    ".tox/*",
-]
+omit = [".tox/*"]
 
 [tool.coverage.report]
 show_missing = true
@@ -217,8 +222,32 @@ check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
-exclude = [
-    '^_build',
-    '^wetty',
-    '^\.venv'
-]
+exclude = ["^_build", "^wetty", "^.venv"]
+
+[tool.black]
+line-length = 90
+target-version = ["py310", "py311", "py312"]
+include = '\\.pyi?$'
+extend-exclude = '''
+/(
+  | blib2to3
+  | tests/data
+  | profiling
+  | migrations
+  | wetty
+  | .venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 80
+known_first_party = ["playground"]
+known_third_party = []
+skip = ["wsgi.py", ".venv/", "wetty"]

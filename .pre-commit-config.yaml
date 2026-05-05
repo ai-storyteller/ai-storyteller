@@ -1,7 +1,20 @@
-exclude: "^docs/|/migrations/"
+exclude: "^docs/|/migrations/|_build/|\\.eggs/|\\.egg-info/"
 default_stages: [ pre-commit ]
+default_language_version:
+  python: python3
 
 repos:
+  - repo: https://github.com/PyCQA/doc8
+    rev: v2.0.0
+    hooks:
+      - id: doc8
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -15,29 +28,19 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # A flake8 replacement, that uses Rust underwater.
-    rev: v0.14.1
+    rev: v0.14.5
     hooks:
-      # Run the linter
       - id: ruff-check
-        name: lint-backend
-        files: playground/
-        args: [ "--config", "pyproject.toml" ]
-      # Run the formatter
+        name: lint
+        args: ["--config", "pyproject.toml", "--fix"]
       - id: ruff-format
+        name: format
 
   - repo: https://github.com/asottile/pyupgrade
-    # Automatically updates old python structures to new ones
-    rev: v3.21.0
+    rev: v3.21.1
     hooks:
       - id: pyupgrade
-        args: [ --py310-plus ]
-
-#  - repo: https://github.com/Yelp/detect-secrets
-#    rev: v1.5.0
-#    hooks:
-#      - id: detect-secrets
-#        args: ['--baseline', '.secrets.baseline']
+        args: ["--py310-plus"]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1

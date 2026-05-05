@@ -1,123 +1,91 @@
-# -----------------------------------------------------------------------------
-# Makefile
-# -----------------------------------------------------------------------------
+.PHONY: help install sync update-lock \
+        test quick-test shell ipython notebook mcp chat tool \
+        docker-build docker-compose-up docker-compose-up-build clean-docker \
+        docker-run print-env-vars docker-run-and-build \
+        clean clean-build clean-pyc clean-test \
+        create-secrets detect-secrets pre-commit pre-commit-install \
+        build-docs serve-docs \
+        build check-build release test-release
 
-# Use a predictable shell; make each recipe run in one shell; fail fast.
 SHELL := /bin/bash
-.SHELLFLAGS := -eu -o pipefail -c
-.ONESHELL:
 
-.DEFAULT_GOAL := init
+UV ?= uv
+PYTHON ?= $(UV) run python
+PYTEST ?= $(UV) run pytest
+RUFF ?= $(UV) run ruff
+MYPY ?= $(UV) run mypy
+PRE_COMMIT ?= $(UV) run pre-commit
+DETECT_SECRETS ?= $(UV) run detect-secrets
+TWINE ?= $(UV) run twine
+SPHINX_BUILD ?= $(UV) run sphinx-build
 
-# -----------------------------------------------------------------------------
-# Python and virtual environment related
-# -----------------------------------------------------------------------------
+SOURCEDIR = .
+BUILDDIR = _build
+DOCS_PORT = 5001
 
-# Prefer an explicit 3.12, falling back sanely.
-BASE_PYTHON := $(shell command -v /opt/homebrew/bin/python3.12 || command -v python3.12 || command -v python3)
-
-ifdef VIRTUAL_ENV
-VENV_DIR := $(VIRTUAL_ENV)
-else ifdef venv
-VENV_DIR := $(venv)
-else
-VENV_DIR := ./.venv
-endif
-
-PYTHON := $(VENV_DIR)/bin/python
-PIP    := $(VENV_DIR)/bin/pip
-
-create-venv:
-	# Create venv and upgrade packaging tools.
-	"$(BASE_PYTHON)" -m venv "$(VENV_DIR)"
-	"$(PYTHON)" -m pip install --upgrade pip setuptools wheel
-
-init: create-venv
-	# Install base requirements into venv.
-	#"$(PIP)" install -r requirements.in
-	"$(PIP)" install -e .'[all]'
-
-install: init
-	# Install developer hooks without leaving a dangling backslash.
-	. "$(VENV_DIR)/bin/activate"
-	pre-commit autoupdate
-	pre-commit install --hook-type pre-push --hook-type post-checkout --hook-type pre-commit
-
-install-dev: create-venv
-	# Install any dev-only extras here (optional).
-	. "$(VENV_DIR)/bin/activate"
-	# Example: "$(PIP)" install -r requirements-dev.in
-
-# -----------------------------------------------------------------------------
-# Config, env vars and credentials
-# -----------------------------------------------------------------------------
-# Pull from environment if present; stay overridable via CLI (e.g., `make run MODEL_NAME=foo`).
-
-PROJECT_ID                  ?= $(shell printf '%s' "$$PROJECT_ID")
-MODEL_NAME                  ?= $(shell printf '%s' "$$MODEL_NAME")
-OPENAI_API_KEY              ?= $(shell printf '%s' "$$OPENAI_API_KEY")
-OPENAI_BASE_URL             ?= $(shell printf '%s' "$$OPENAI_BASE_URL")
-GOOGLE_CLIENT_ID            ?= $(shell printf '%s' "$$GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET        ?= $(shell printf '%s' "$$GOOGLE_CLIENT_SECRET")
-SECRET_KEY                  ?= $(shell printf '%s' "$$SECRET_KEY")
-DISABLE_HTTPS_ENFORCEMENT   ?= $(shell printf '%s' "$$DISABLE_HTTPS_ENFORCEMENT")
-INPUT_PATH                  ?= $(shell printf '%s' "$$INPUT_PATH")
-OUTPUT_PATH                 ?= $(shell printf '%s' "$$OUTPUT_PATH")
+PROJECT_ID ?= $(shell printf '%s' "$$PROJECT_ID")
+MODEL_NAME ?= $(shell printf '%s' "$$MODEL_NAME")
+OPENAI_API_KEY ?= $(shell printf '%s' "$$OPENAI_API_KEY")
+OPENAI_BASE_URL ?= $(shell printf '%s' "$$OPENAI_BASE_URL")
+GOOGLE_CLIENT_ID ?= $(shell printf '%s' "$$GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET ?= $(shell printf '%s' "$$GOOGLE_CLIENT_SECRET")
+SECRET_KEY ?= $(shell printf '%s' "$$SECRET_KEY")
+DISABLE_HTTPS_ENFORCEMENT ?= $(shell printf '%s' "$$DISABLE_HTTPS_ENFORCEMENT")
+INPUT_PATH ?= $(shell printf '%s' "$$INPUT_PATH")
+OUTPUT_PATH ?= $(shell printf '%s' "$$OUTPUT_PATH")
 STORAGE_SERVICE_ACCOUNT_B64 ?= $(shell printf '%s' "$$STORAGE_SERVICE_ACCOUNT_B64")
-STORAGE_SERVICE_ACCOUNT     ?= $(shell printf '%s' "$$STORAGE_SERVICE_ACCOUNT")
-MEDIA_PATH                  ?= $(shell printf '%s' "$$MEDIA_PATH")
+STORAGE_SERVICE_ACCOUNT ?= $(shell printf '%s' "$$STORAGE_SERVICE_ACCOUNT")
+MEDIA_PATH ?= $(shell printf '%s' "$$MEDIA_PATH")
 
 SERVICE_NAME := ai-storyteller-2025
-REGION       := europe-west4
+REGION := europe-west4
 CONNECTOR_NAME :=
-SUBNET_NAME    := app-tier-eu-west4
+SUBNET_NAME := app-tier-eu-west4
 
-# Export once so every recipe inherits these (no per-line exports or backgrounding).
 export PROJECT_ID MODEL_NAME OPENAI_API_KEY OPENAI_BASE_URL \
        GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET SECRET_KEY \
        DISABLE_HTTPS_ENFORCEMENT INPUT_PATH OUTPUT_PATH \
        STORAGE_SERVICE_ACCOUNT_B64 STORAGE_SERVICE_ACCOUNT \
-       STORYTELLER_MEDIA_ROOT, STORYTELLER_MEDIA_PATH STORYTELLER_MEDIA_URL \
+       STORYTELLER_MEDIA_ROOT STORYTELLER_MEDIA_PATH STORYTELLER_MEDIA_URL \
        DISABLE_AUTHENTICATION STORYTELLER_OUTPUT_PATH \
        STORYTELLER_OUTPUT_MEDIA_URL
 
-# -----------------------------------------------------------------------------
-# Running locally using Python from virtualenv
-# -----------------------------------------------------------------------------
+help:
+	@echo "Common targets:"
+	@echo "  make install        Sync uv environment with all groups and extras"
+	@echo "  make sync           Same as install"
+	@echo "  make test           Run pytest"
+	@echo "  make quick-test     Run pytest through uv"
+	@echo "  make ruff           Run ruff check"
+	@echo "  make mypy           Run mypy"
+	@echo "  make pre-commit     Run pre-commit hooks"
+	@echo "  make build          Build package"
 
-# Run the app with env vars applied and a clean Python env.
-run:
-	# Unset Python env poisons for safety; force venv python.
-	PYTHONHOME= PYTHONPATH=
-	. "$(VENV_DIR)/bin/activate"
-	exec "$(PYTHON)" main.py
+install sync:
+	$(UV) sync --all-groups --all-extras
 
-shell:
-	PYTHONHOME= PYTHONPATH=
-	. "$(VENV_DIR)/bin/activate"
-	exec "$(VENV_DIR)/bin/ipython"
+update-lock:
+	$(UV) lock --upgrade
+
+test quick-test:
+	$(PYTEST)
+
+ipython:
+	$(UV) run ipython
 
 notebook:
-	PYTHONHOME= PYTHONPATH=
-	. "$(VENV_DIR)/bin/activate"
-	exec "$(VENV_DIR)/bin/marimo" edit --headless --no-token --port 2718 --host 0.0.0.0
+	$(UV) run marimo edit --headless --no-token --port 2718 --host 0.0.0.0
 
 mcp:
-	/Users/me/.virtualenvs/storyteller/bin/python /Users/me/repos/ai-storyteller/src/storyteller/modules/st/mcp_impl.py http
+	$(UV) run python src/storyteller/modules/st/mcp_impl.py http
 
-chat:
-	PYTHONHOME= PYTHONPATH=
-	. "$(VENV_DIR)/bin/activate"
-	exec "storyteller-chat"
+chat tool:
+	$(UV) run storyteller-chat
 
-tool: chat
-
-# -----------------------------------------------------------------------------
-# Docker and deployment
-# -----------------------------------------------------------------------------
+shell:
+	$(UV) run bash
 
 docker-build:
-	# docker compose picks up exported env from make's process environment.
 	docker compose build
 
 docker-compose-up:
@@ -127,11 +95,9 @@ docker-compose-up-build:
 	docker compose up --build
 
 clean-docker:
-	# Remove a specific container if present; ignore errors if missing.
 	docker rm -f playground || true
 
 docker-run: clean-docker
-	# Run a local container mirroring Cloud Run env.
 	docker run \
 		--name playground \
 		-p 8000:8000 \
@@ -160,10 +126,6 @@ print-env-vars:
 
 docker-run-and-build: docker-build docker-run
 
-# -----------------------------------------------------------------------------
-# Cleanup
-# -----------------------------------------------------------------------------
-
 clean: clean-build clean-pyc clean-test
 
 clean-build:
@@ -182,89 +144,44 @@ clean-test:
 	rm -f .coverage coverage.xml
 	rm -rf htmlcov/ .pytest_cache .mypy_cache .ruff_cache
 
-clean-venv:
-	rm -rf "$(VENV_DIR)"
-
-# -----------------------------------------------------------------------------
-# Dev handy
-# -----------------------------------------------------------------------------
-
 create-secrets:
-	. "$(VENV_DIR)/bin/activate"
-	detect-secrets scan > .secrets.baseline
+	$(DETECT_SECRETS) scan > .secrets.baseline
 
 detect-secrets:
-	. "$(VENV_DIR)/bin/activate"
-	detect-secrets scan --baseline .secrets.baseline
+	$(DETECT_SECRETS) scan --baseline .secrets.baseline
 
-pre-commit:
-	pre-commit run --all-files
+pre-commit-install:
+	$(PRE_COMMIT) install --hook-type pre-push --hook-type post-checkout --hook-type pre-commit
 
-test:
-	. "$(VENV_DIR)/bin/activate"
-	exec "$(VENV_DIR)/bin/pytest" test_docs.py
+pre-commit: pre-commit-install
+	$(PRE_COMMIT) run --all-files
 
-doctor:
-	# Quick sanity check of interpreter provenance and stdlib.
-	PYTHONHOME= PYTHONPATH=
-	. "$(VENV_DIR)/bin/activate"
-	which python
-	python -V
-	python -c 'import sys, sysconfig, encodings; \
-print("exe:", sys.executable); \
-print("base:", getattr(sys, "_base_executable", None)); \
-print("prefix:", sys.prefix); \
-print("stdlib:", sysconfig.get_paths().get("stdlib"))'
+ruff:
+	$(RUFF) check .
 
-# -----------------------------------------------------------------------------
-# Documentation (Sphinx)
-# -----------------------------------------------------------------------------
+ruff-fix:
+	$(RUFF) check . --fix
 
-SPHINXOPTS  ?=
-SPHINXBUILD := $(VENV_DIR)/bin/sphinx-build
-SOURCEDIR    = .
-BUILDDIR     = _build
+format:
+	$(RUFF) format .
 
-help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+mypy:
+	$(UV) run mypy src
+
+build-docs:
+	$(SPHINX_BUILD) -n -b html $(SOURCEDIR) $(BUILDDIR)
 
 serve-docs:
-	"$(PYTHON)" -m http.server 5001 --directory "_build/$(filter-out $@,$(MAKECMDGOALS))/"
-
-# Catch-all target: route unknown targets to Sphinx "make mode".
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-# -----------------------------------------------------------------------------
-# PyPI
-# -----------------------------------------------------------------------------
+	cd $(BUILDDIR) && $(PYTHON) -m http.server $(DOCS_PORT)
 
 build:
-	# Unset Python env poisons for safety; force venv python.
-	PYTHONHOME= PYTHONPATH=
-	source "$(VENV_DIR)/bin/activate" && python -m build .
+	$(PYTHON) -m build .
 
 check-build:
-	# Unset Python env poisons for safety; force venv python.
-	PYTHONHOME= PYTHONPATH=
-	source "$(VENV_DIR)/bin/activate" && twine check dist/*
+	$(TWINE) check dist/*
 
 release:
-	# Unset Python env poisons for safety; force venv python.
-	PYTHONHOME= PYTHONPATH=
-	source "$(VENV_DIR)/bin/activate" && twine upload dist/* --verbose
+	$(TWINE) upload dist/* --verbose
 
 test-release:
-	# Unset Python env poisons for safety; force venv python.
-	PYTHONHOME= PYTHONPATH=
-	source "$(VENV_DIR)/bin/activate" && twine upload --repository testpypi dist/*
-
-# -----------------------------------------------------------------------------
-# Phony declarations
-# -----------------------------------------------------------------------------
-
-.PHONY: init create-venv install install-dev run shell notebook \
-        docker-build docker-compose-up docker-compose-up-build clean-docker \
-        docker-run print-env-vars docker-run-and-build clean clean-build \
-        clean-pyc clean-test clean-venv create-secrets detect-secrets \
-        pre-commit test doctor help serve-docs
+	$(TWINE) upload --repository testpypi dist/* --verbose
