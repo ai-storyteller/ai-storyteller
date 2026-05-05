@@ -15,7 +15,7 @@
 #     "langchain-core",
 #     "langchain-openai",
 #     "langchain",
-#     "marimo>=0.11.29",
+#     "marimo>=0.11.29,<0.16",
 #     "matplotlib",
 #     "openai",
 #     "openpyxl",

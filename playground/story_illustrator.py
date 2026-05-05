@@ -1,6 +1,6 @@
 # /// script
 # [tool.marimo.runtime]
-# auto_instantiate = false
+# auto_instantiate = true
 # ///
 
 import marimo
