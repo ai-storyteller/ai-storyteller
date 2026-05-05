@@ -122,7 +122,6 @@ mediums: dict[str, str] = {
     "ink wash painting": "monochromatic ink gradient, fluid and spontaneous brush economy, ethereal atmosphere, subtle grey tones",
     "stained glass": "thick lead lines (cames), deep jewel-tone colors, prismatic light diffraction, segmented geometric or figurative shapes",
     "fresco painting": "dry, matte pigment, slightly rough plaster texture, muted earth-tone palette, large-scale mural composition",
-
     # Photographic Mediums
     "collodion photograph": "wet plate look, long exposure blur, subtle silver tarnish, distinct vignetting, shallow depth of field, mid-19th century aesthetic",
     "photo-realistic photograph": "ultra-sharp focus, granular skin detail, natural lens flares, shallow depth of field (bokeh), commercial lighting setup",
@@ -130,7 +129,6 @@ mediums: dict[str, str] = {
     "macro photography": "extreme close-up detail, exaggerated texture, very shallow depth of field, sharp foreground subject, illuminated by focused light",
     "telephoto lens shot": "compressed perspective, stacked background layers, flat depth of field, tight framing of the subject",
     "black and white photography": "high-contrast grayscale, dramatic tonal range, deep shadows and bright highlights, timeless and stark emotional quality",
-
     # Rendering Styles / Digital Finish
     "low poly": "simple, angular geometry, clear face edges, flat shaded textures, vibrant saturated colors, 3D rendering aesthetic",
     "voxel art": "blocky, cube-based structure, pixelated 3D look, low resolution, distinct grid lines, video game aesthetic",

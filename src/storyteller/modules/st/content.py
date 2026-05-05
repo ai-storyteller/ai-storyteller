@@ -1,26 +1,24 @@
 import datetime
 import json
 import logging
-import re
 import os
+import re
 import subprocess
-from typing import Union
-from pathlib import Path
 from io import BytesIO
+from pathlib import Path
+from typing import Union
 
 import requests
-from reportlab.pdfgen import canvas
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import (
+    ParagraphStyle,
+    getSampleStyleSheet,
+)
 from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
-from reportlab.lib.styles import (
-    getSampleStyleSheet,
-    ParagraphStyle,
-)
-from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
-
-
 
 __all__ = (
     "break_text_into_paragraphs",
@@ -335,6 +333,7 @@ def create_story_pdf(
 
     c.save()
 
+
 # Add this helper near your other utilities
 def _normalize_story_whitespace(text: str) -> str:
     """Normalize story text whitespace:
@@ -348,7 +347,7 @@ def _normalize_story_whitespace(text: str) -> str:
 
     # Protect paragraph breaks by temporarily marking them
     PARA = "\n\n"
-    SENTINEL = "\uFFFF"  # uncommon char as placeholder
+    SENTINEL = "\uffff"  # uncommon char as placeholder
     text = text.replace(PARA, SENTINEL)
 
     # Convert single newlines to spaces
@@ -525,7 +524,7 @@ def dump_json(data: dict, json_path: str) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def docx_to_pdf(docx_path: Union[str, Path], pdf_path: Union[str, Path]) -> None:
+def docx_to_pdf(docx_path: str | Path, pdf_path: str | Path) -> None:
     """
     Convert a DOCX file to PDF using LibreOffice (soffice --headless).
     Supports both string and pathlib.Path objects for input and output paths.
@@ -549,8 +548,7 @@ def docx_to_pdf(docx_path: Union[str, Path], pdf_path: Union[str, Path]) -> None
             str(docx_path),
         ],
         check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
 
     produced = out_dir / docx_path.with_suffix(".pdf").name
@@ -586,4 +584,3 @@ def escape_latex(text: str) -> str:
         if char != "\\":  # Avoid re-processing backslash
             text = text.replace(char, escaped_char)
     return text
-

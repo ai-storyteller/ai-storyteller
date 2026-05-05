@@ -1,6 +1,6 @@
 # /// script
 # [tool.marimo.runtime]
-# auto_instantiate = false
+# auto_instantiate = true
 # ///
 
 import marimo
@@ -14,10 +14,10 @@ def _std_imports():
     import logging
     import os
     import random
-    from functools import partial
-    from typing import Any
-    from pathlib import Path
     from copy import copy, deepcopy
+    from functools import partial
+    from pathlib import Path
+    from typing import Any
 
     return (
         Any,
@@ -49,37 +49,37 @@ def _app_imports():
         clear_directory,
         create_zip,
     )
+    from storyteller.modules.common.media import as_url
     from storyteller.modules.common.storage import (
         get_input_root_dir,
         get_output_root_dir,
         get_storage_client,
     )
-    from storyteller.modules.common.media import as_url
+    from storyteller.modules.st.content import (
+        create_timestamp_directory,
+        docx_to_pdf,
+        download_images,
+        markdown_with_images,
+    )
+    from storyteller.modules.st.content_docx import create_docx
     from storyteller.modules.st.enums import ImageGeneratorEnum
     from storyteller.modules.st.files import get_filename_and_bytes
-    from storyteller.modules.st.option_choices import (
-        artistic_styles,
-        eye_color_choices,
-        identity_choices,
-        hair_color_choices,
-        skin_color_choices,
-        reading_level_choices,
+    from storyteller.modules.st.image_gen_calls import (
+        generate_image,
     )
     from storyteller.modules.st.llm_calls import (
         describe_image,
         generate_story,
         load_characters,
     )
-    from storyteller.modules.st.image_gen_calls import (
-        generate_image,
+    from storyteller.modules.st.option_choices import (
+        artistic_styles,
+        eye_color_choices,
+        hair_color_choices,
+        identity_choices,
+        reading_level_choices,
+        skin_color_choices,
     )
-    from storyteller.modules.st.content import (
-        create_timestamp_directory,
-        download_images,
-        markdown_with_images,
-        docx_to_pdf,
-    )
-    from storyteller.modules.st.content_docx import create_docx
 
     return (
         ImageGeneratorEnum,
@@ -430,9 +430,10 @@ def _story_prompt(mo):
     story_prompt = mo.ui.text_area(
         # value="""Craft a whimsical fantasy story set in an enchanted, glowing forest where ancient secrets are whispered by the wind and animals possess unique magical abilities. The characters discover a hidden map leading to a legendary artifact.
         # """,  # noqa
-        value="""Write a 500-700 word children's story about [CHARACTERS]. Start with them waking up/discovering something absurdly wrong (be creative—no flying cows). The problem escalates fast: their first fix backfires, making things worse, then worse again. Include snappy dialogue (40% of the story), sound effects, and physical comedy. They solve it through teamwork, each using their unique trait. End upbeat with everyone laughing together. 
-TONE: Fast-paced and hilarious, not gentle. Open with action, not description.
-        """,  # noqa
+        value=(
+            "Write a 500-700 word children's story about [CHARACTERS]. Start with them waking up/discovering something absurdly wrong (be creative—no flying cows). The problem escalates fast: their first fix backfires, making things worse, then worse again. Include snappy dialogue (40% of the story), sound effects, and physical comedy. They solve it through teamwork, each using their unique trait. End upbeat with everyone laughing together.\n"
+            "TONE: Fast-paced and hilarious, not gentle. Open with action, not description."
+        ),
         label="Story Prompt",
         full_width=True,
     )
@@ -764,13 +765,9 @@ def _tabs(
             "Step 4. Documents": mo.vstack(
                 [
                     mo.md("### Generated PDF"),
-                    mo.pdf(pdf_path, width="600px", height="50vh")
-                    if pdf_path.exists()
-                    else mo.md(""),
+                    mo.pdf(pdf_path, width="600px", height="50vh") if pdf_path.exists() else mo.md(""),
                     mo.md("### Generated DOCX"),
-                    mo.md(f"""
-                    **Download the DOCX file:** [Download link]({docx_url})
-                    """) if docx_url else mo.md(""),
+                    mo.md(f"""**Download the DOCX file:** [Download link]({docx_url})""") if docx_url else mo.md(""),
                 ]
             ),
         },

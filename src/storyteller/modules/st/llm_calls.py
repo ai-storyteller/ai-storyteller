@@ -1,22 +1,20 @@
 import base64
 import logging
-import os
 
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 from langchain_core.prompts import (
     ChatPromptTemplate,
-    SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
 )
-from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
 from storyteller.modules.common.progress_bar import ProgressBar
 from storyteller.modules.st.option_choices import artistic_styles
 from storyteller.settings import (
-    STORY_MODEL_NAME,
     IMAGE_DESCRIPTOR_MODEL_NAME,
+    STORY_MODEL_NAME,
 )
 
 __all__ = (

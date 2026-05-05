@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import Optional, Dict, List
+from typing import Dict, Optional
 
 from fastmcp import FastMCP
 
@@ -24,6 +24,7 @@ mcp = FastMCP("AI Storyteller: Story creation server")
 # Helper: Type mapping
 # ----------------------------------------------------------------------------
 
+
 def _fallback_title_from_request(req: str) -> str:
     """Best-effort title if LLM didn't pass one."""
     raw = req.strip().split()
@@ -34,11 +35,9 @@ def _fallback_title_from_request(req: str) -> str:
     if not draft:
         return "My Storybook"
     lower = draft.lower()
-    for prefix in [
-        "create a story about", "make a story about", "tell a story about"
-    ]:
+    for prefix in ["create a story about", "make a story about", "tell a story about"]:
         if lower.startswith(prefix):
-            draft = draft[len(prefix):].strip().strip(":,-")
+            draft = draft[len(prefix) :].strip().strip(":,-")
     draft = draft[:60].strip()
     if not draft:
         draft = "My Storybook"
@@ -70,23 +69,27 @@ Returns:
 - output_dir: Directory where assets were written.
 
 After calling this tool, reply to the user with the title and all PDF links in public_urls.
-"""
+""",
 )
 def create_story_bundle(
     story_request: str,
-    story_title: Optional[str] = None,
-    artistic_style_key: Optional[str] = None,
-    reading_level: Optional[str] = None,
-    image_generator: Optional[str] = None,
-    user_email: Optional[str] = None,
+    story_title: str | None = None,
+    artistic_style_key: str | None = None,
+    reading_level: str | None = None,
+    image_generator: str | None = None,
+    user_email: str | None = None,
     url_path: str = "api",
     image_prompt_prefix: str | None = None,
     image_prompt_suffix: str | None = None,
-) -> Dict:
+) -> dict:
     """
     Generate a fully illustrated story and export multiple ready-to-download PDF versions.
     """
-    _title = story_title.strip() if story_title and story_title.strip() else _fallback_title_from_request(story_request)
+    _title = (
+        story_title.strip()
+        if story_title and story_title.strip()
+        else _fallback_title_from_request(story_request)
+    )
     return create_story_bundle_fn(
         story_request=story_request,
         story_title=_title,

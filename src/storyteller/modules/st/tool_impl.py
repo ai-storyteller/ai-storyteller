@@ -5,40 +5,33 @@
 from __future__ import annotations
 
 import json
-import os
 import logging
 from pathlib import Path
 from typing import Any, Optional
 
+from storyteller.modules.common.media import as_url
 from storyteller.modules.common.storage import (
-    get_storage_client,
     get_input_root_dir,
     get_output_root_dir,
+    get_storage_client,
 )
-from storyteller.modules.common.media import as_url
+from storyteller.modules.st.content import (
+    create_timestamp_directory,
+    docx_to_pdf,
+    download_images,
+)
+from storyteller.modules.st.content_docx import create_docx
 from storyteller.modules.st.enums import ImageGeneratorEnum
+from storyteller.modules.st.image_gen_calls import generate_image
 from storyteller.modules.st.llm_calls import (
     generate_story_from_basic_prompt,
 )
-from storyteller.modules.st.image_gen_calls import generate_image
-from storyteller.modules.st.content import (
-    create_timestamp_directory,
-    download_images,
-    docx_to_pdf,
-)
-from storyteller.modules.st.content_docx import create_docx
 from storyteller.modules.st.option_choices import artistic_styles, reading_level_choices
-from storyteller.settings import (
-    OUTPUT_ROOT,
-    MEDIA_ROOT,
-    MEDIA_URL_BASE,
-    OUTPUT_MEDIA_URL_BASE,
-)
 
 logger = logging.getLogger(__name__)
 
 
-def _safe_image_generator(image_generator: Optional[str]) -> str:
+def _safe_image_generator(image_generator: str | None) -> str:
     """Pick a valid ImageGeneratorEnum.value."""
     valid_values = [_o.value for _o in ImageGeneratorEnum]
 
@@ -53,7 +46,7 @@ def _safe_image_generator(image_generator: Optional[str]) -> str:
 
 def _infer_reading_level_hint(
     story_request: str,
-    explicit_reading_level: Optional[str],
+    explicit_reading_level: str | None,
 ) -> str:
     """
     Try to pick an appropriate reading_level from reading_level_choices.
@@ -100,8 +93,8 @@ def _infer_reading_level_hint(
 
 def _maybe_pick_art_style(
     story_request: str,
-    explicit_style: Optional[str],
-) -> Optional[str]:
+    explicit_style: str | None,
+) -> str | None:
     """
     Choose artistic_style key for illustrations.
     Priority:
@@ -125,7 +118,7 @@ def _maybe_pick_art_style(
         key_words = style_key.lower().replace("-", " ").split()
         for word in key_words:
             # Skip common words that might cause false positives
-            if word in ['art', 'the', 'and', 'or', 'painting', 'photography', 'shot']:
+            if word in ["art", "the", "and", "or", "painting", "photography", "shot"]:
                 continue
             # Check if significant style word appears in request
             if len(word) > 4 and word in req_lower:
@@ -159,16 +152,16 @@ def _maybe_pick_art_style(
 
 def create_story_bundle_fn(
     story_request: str,
-    story_title: Optional[str] = None,
-    story_text: Optional[str] = None,
+    story_title: str | None = None,
+    story_text: str | None = None,
     # Optional knobs. The LLM can set these, but none are required.
-    artistic_style_key: Optional[str] = None,
-    reading_level: Optional[str] = None,
-    image_generator: Optional[str] = None,
-    user_email: Optional[str] = None,
+    artistic_style_key: str | None = None,
+    reading_level: str | None = None,
+    image_generator: str | None = None,
+    user_email: str | None = None,
     url_path: str = "api",
-    image_prompt_prefix: Optional[str] = None,
-    image_prompt_suffix: Optional[str] = None,
+    image_prompt_prefix: str | None = None,
+    image_prompt_suffix: str | None = None,
 ) -> dict[str, Any]:
     """
     High-level autonomous story pipeline:
@@ -215,7 +208,7 @@ def create_story_bundle_fn(
 
     # Decide which user's output dir to use
     if user_email:
-        base_output_dir = output_root_dir /  user_email / url_path
+        base_output_dir = output_root_dir / user_email / url_path
     else:
         base_output_dir = output_root_dir / "unauthenticated" / url_path
 

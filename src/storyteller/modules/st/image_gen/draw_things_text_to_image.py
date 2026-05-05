@@ -1,18 +1,20 @@
 import base64
-import os
 import pathlib
-import requests
-from uuid import uuid4
-from pathlib import Path
 import urllib.parse
+from pathlib import Path
+from uuid import uuid4
+
+import requests
 
 from storyteller.modules.st.option_choices import artistic_styles
 from storyteller.settings import (
-    OUTPUT_ROOT,
-    MEDIA_ROOT,
-    MEDIA_URL_BASE,
     DRAW_THINGS_API_ROOT as SERVER_URL,
 )
+from storyteller.settings import (
+    MEDIA_ROOT,
+    MEDIA_URL_BASE,
+)
+
 __all__ = ("generate_draw_things_text_to_image",)
 
 # --- Configuration for the local DrawThings API ---
@@ -123,7 +125,7 @@ def generate_draw_things_text_to_image(
         # 5. Return the local file path as the 'URL'
         return image_url, final_prompt, True
 
-    except requests.exceptions.ConnectionError as e:
+    except requests.exceptions.ConnectionError:
         error_message = f"Connection Error: Could not connect to DrawThings API at {SERVER_URL}. Is it running?"
         print(error_message)
         return error_message, final_prompt, False

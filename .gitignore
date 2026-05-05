@@ -23,3 +23,6 @@ media/
 coreml_sdxl_base_packages/
 drawthings_output/
 unauthenticated/
+uv.lock
+.coverage
+drawthings_*.png
