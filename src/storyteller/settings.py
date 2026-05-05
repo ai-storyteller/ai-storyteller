@@ -21,7 +21,7 @@ __all__ = (
     "STORAGE_SERVICE_ACCOUNT_B64",
 )
 
-load_dotenv()
+load_dotenv(override=True)
 
 LOGGER = logging.getLogger(__name__)
 
