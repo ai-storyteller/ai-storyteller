@@ -204,7 +204,7 @@ addopts = [
     "--ignore=tmp",
     "--capture=no",
 ]
-testpaths = ["tests", "playground"]
+testpaths = ["src/storyteller/tests", "playground"]
 pythonpath = ["."]
 
 [tool.coverage.run]
