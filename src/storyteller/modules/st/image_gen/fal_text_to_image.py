@@ -1,5 +1,3 @@
-import os
-
 import fal_client
 
 from storyteller.modules.st.option_choices import artistic_styles

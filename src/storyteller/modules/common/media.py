@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from urllib.parse import quote
 
-from storyteller.settings import OUTPUT_ROOT, OUTPUT_MEDIA_URL_BASE
+from storyteller.settings import OUTPUT_MEDIA_URL_BASE, OUTPUT_ROOT
 
 __all__ = ("as_url",)
 

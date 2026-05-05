@@ -1,10 +1,10 @@
 from storyteller.modules.st.enums import ImageGeneratorEnum
 from storyteller.modules.st.helpers import get_enum_value
-from storyteller.modules.st.image_gen.fal_text_to_image import (
-    generate_fal_text_to_image,
-)
 from storyteller.modules.st.image_gen.draw_things_text_to_image import (
     generate_draw_things_text_to_image,
+)
+from storyteller.modules.st.image_gen.fal_text_to_image import (
+    generate_fal_text_to_image,
 )
 
 __all__ = ("generate_image",)

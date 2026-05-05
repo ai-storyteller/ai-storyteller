@@ -1,21 +1,17 @@
 from __future__ import annotations
 
+import datetime
 import io
 import re
-import datetime
 
 import requests
-
 from docx import Document
-from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml.ns import qn
+from docx.shared import Inches, Pt
 
 from storyteller.modules.st.content import break_text_into_paragraphs
 
-__all__ = (
-    "create_docx",
-)
+__all__ = ("create_docx",)
 
 
 def _fetch_image_bytes(url_or_path: str) -> io.BytesIO | None:
@@ -31,6 +27,7 @@ def _fetch_image_bytes(url_or_path: str) -> io.BytesIO | None:
     except Exception:
         return None
 
+
 def _usable_page_width_inches(document: Document) -> float:
     """Compute usable page width in Inches based on the first section."""
     section = document.sections[0]
@@ -39,14 +36,20 @@ def _usable_page_width_inches(document: Document) -> float:
     right_margin_inches = section.right_margin.inches
     return max(0.0, page_width_inches - left_margin_inches - right_margin_inches)
 
-def _add_centered_picture(document: Document, img_stream: io.BytesIO, width_inches: float) -> None:
+
+def _add_centered_picture(
+    document: Document, img_stream: io.BytesIO, width_inches: float
+) -> None:
     """Insert centered image with given width in inches."""
     p = document.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run()
     run.add_picture(img_stream, width=Inches(width_inches))
 
-def _add_centered_text(document: Document, text: str, bold: bool = False, font_size_pt: int | None = None) -> None:
+
+def _add_centered_text(
+    document: Document, text: str, bold: bool = False, font_size_pt: int | None = None
+) -> None:
     """Add a centered paragraph with optional bold and font size."""
     p = document.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -55,7 +58,14 @@ def _add_centered_text(document: Document, text: str, bold: bool = False, font_s
     if font_size_pt:
         run.font.size = Pt(font_size_pt)
 
-def _add_justified_paragraph(document: Document, text: str, space_before_pt: int = 0, space_after_pt: int = 12, line_spacing: float = 1.5) -> None:
+
+def _add_justified_paragraph(
+    document: Document,
+    text: str,
+    space_before_pt: int = 0,
+    space_after_pt: int = 12,
+    line_spacing: float = 1.5,
+) -> None:
     """Add a justified paragraph with spacing and line-height."""
     p = document.add_paragraph(text)
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -66,6 +76,7 @@ def _add_justified_paragraph(document: Document, text: str, space_before_pt: int
         pf.space_after = Pt(space_after_pt)
     # Set line spacing
     pf.line_spacing = line_spacing
+
 
 def create_docx(
     title: str,
@@ -133,14 +144,18 @@ def create_docx(
 
     # Prepare paragraphs list akin to markdown_with_images
     normalized_text = break_text_into_paragraphs(text, nb_paragraphs=len(images))
-    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", normalized_text.strip()) if p.strip()]
+    paragraphs = [
+        p.strip() for p in re.split(r"\n\s*\n", normalized_text.strip()) if p.strip()
+    ]
 
     # Interleave paragraphs and images
     img_idx = 0
     for i, para in enumerate(paragraphs):
         # Text block: we do not actually constrain to a fixed width,
         # but we simulate layout by spacing and justification.
-        _add_justified_paragraph(doc, para, space_before_pt=0, space_after_pt=6, line_spacing=1.5)
+        _add_justified_paragraph(
+            doc, para, space_before_pt=0, space_after_pt=6, line_spacing=1.5
+        )
 
         # Insert image after the paragraph if available
         if img_idx < len(images):

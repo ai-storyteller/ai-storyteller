@@ -1,6 +1,5 @@
-from pydantic import alias_generators
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import ConfigDict
+from pydantic import ConfigDict, alias_generators
 
 __all__ = ("BaseModel",)
 
